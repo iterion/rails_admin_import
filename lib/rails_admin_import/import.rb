@@ -18,6 +18,7 @@ module RailsAdminImport
 
         fields = self.new.attributes.keys.collect { |key| key.to_sym }
   
+        
         self.belongs_to_fields.each do |key|
           fields.delete("#{key}_id".to_sym)
         end
@@ -38,12 +39,14 @@ module RailsAdminImport
       end
  
       def belongs_to_fields
+        return [] unless self.respond_to? :reflections
         attrs = self.reflections.select { |k, v| v.macro == :belongs_to }.keys
         attrs - RailsAdminImport.config(self).excluded_fields 
       end
   
       def many_fields
         attrs = []
+        return attrs unless self.respond_to? :reflections
         self.reflections.each do |k, v|
           if [:has_and_belongs_to_many, :has_many].include?(v.macro)
             attrs << k.to_s.singularize.to_sym
